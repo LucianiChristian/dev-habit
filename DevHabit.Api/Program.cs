@@ -1,3 +1,6 @@
+using DevHabit.Api.Database;
+using DevHabit.Api.Extensions;
+using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -5,7 +8,12 @@ using OpenTelemetry.Trace;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.ReturnHttpNotAcceptable = true;
+})
+.AddNewtonsoftJson()
+.AddXmlSerializerFormatters();
 
 builder.Services.AddOpenApi();
 
@@ -15,6 +23,7 @@ builder.Services.AddOpenTelemetry()
     {
         tracing.AddHttpClientInstrumentation();
         tracing.AddAspNetCoreInstrumentation();
+        tracing.AddNpgsql();
     })
     .WithMetrics(metrics =>
     {
@@ -30,11 +39,15 @@ builder.Logging.AddOpenTelemetry(options =>
     options.IncludeFormattedMessage = true;
 });
 
+builder.Services.AddDatabase(builder.Configuration);
+
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    await app.ApplyMigrationsAsync();
 }
 
 app.UseHttpsRedirection();

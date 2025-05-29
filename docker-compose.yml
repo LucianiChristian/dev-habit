@@ -15,16 +15,35 @@
       # Aspire Dashboard
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.aspire-dashboard:18889
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+    depends_on:
+      devhabit.postgres:
+        condition: service_healthy
       
-  devhabit.seq:
-    image: datalust/seq:2024.3
+  devhabit.postgres:
+    image: postgres:17.2 # or latest
     environment:
-      ACCEPT_EULA: "Y"
+      POSTGRES_DB: devhabit
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
-      - ./.containers/seq_data:/data
+      - ./.containers/postgres_data:/var/lib/postgresql/data
     ports:
-      - "8080:80"
-      - "5341:5341"
+      - "5432:5432" 
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+#  devhabit.seq:
+#    image: datalust/seq:2024.3
+#    environment:
+#      ACCEPT_EULA: "Y"
+#    volumes:
+#      - ./.containers/seq_data:/data
+#    ports:
+#      - "8080:80"
+#      - "5341:5341"
       
   devhabit.aspire-dashboard:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
@@ -32,3 +51,21 @@
       DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
     ports:
       - "18888:18888"
+    depends_on:
+      - devhabit.api
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+volumes:
+  pgadmin_data:
+  postgres_data:

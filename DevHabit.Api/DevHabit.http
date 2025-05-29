@@ -1,4 +1,4 @@
 ﻿@DevHabitApi_HostAddress = http://localhost:5000
 
-GET {{DevHabitApi_HostAddress}}/WeatherForecast
+GET {{DevHabitApi_HostAddress}}/habits
 Accept: application/json
