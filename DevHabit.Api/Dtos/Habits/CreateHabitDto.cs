@@ -1,6 +1,6 @@
 ﻿using DevHabit.Api.Entities;
 
-namespace DevHabit.Api.Dtos;
+namespace DevHabit.Api.Dtos.Habits;
 
 public sealed record CreateHabitDto
 {
