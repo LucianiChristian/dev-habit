@@ -28,10 +28,10 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetHabit(string id)
+    public async Task<ActionResult<HabitWithTagsDto>> GetHabit(string id)
     {
-        HabitDto habit = await dbContext.Habits
-            .Select(HabitQueries.ProjectToDto())
+        HabitWithTagsDto? habit = await dbContext.Habits
+            .Select(HabitQueries.ProjectToDtoWithTags())
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (habit is null)
