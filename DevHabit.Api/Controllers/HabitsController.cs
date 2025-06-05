@@ -1,12 +1,11 @@
-﻿using DevHabit.Api.Database;
-using DevHabit.Api.Dtos;
+﻿#pragma warning disable CA1862
+
+using DevHabit.Api.Database;
 using DevHabit.Api.Dtos.Habits;
 using DevHabit.Api.Entities;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevHabit.Api.Controllers;
@@ -16,9 +15,35 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionDto>> GetHabits()
+    public async Task<ActionResult<HabitsCollectionDto>> GetHabits(HabitsQueryParameters queryParams)
     {
-        List<HabitDto> habits = await dbContext.Habits
+        IQueryable<Habit> query = dbContext.Habits;
+
+        if (queryParams.Search is not null)
+        {
+            query = query.Where(x => 
+                    x.Name.ToLower().Contains(queryParams.Search) ||
+                    x.Description != null && x.Description.ToLower().Contains(queryParams.Search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(queryParams.Search))
+        {
+            query = query.Where(x =>
+                x.Name.ToLower().Contains(queryParams.Search) ||
+                x.Description != null && x.Description.ToLower().Contains(queryParams.Search));
+        }
+
+        if (queryParams.Status is not null)
+        {
+            query = query.Where(x => x.Status == queryParams.Status);
+        }
+
+        if (queryParams.Type is not null)
+        {
+            query = query.Where(x => x.Type == queryParams.Type);
+        }
+        
+        List<HabitDto> habits = await query
             .Select(HabitQueries.ProjectToDto())
             .ToListAsync();
 
