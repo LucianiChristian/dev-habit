@@ -22,7 +22,7 @@ public class TagsController(ApplicationDbContext dbContext) : ControllerBase
 
         var tagsCollection = new TagsCollectionDto
         {
-            Data = tags
+            Items = tags
         };
 
         return Ok(tagsCollection);

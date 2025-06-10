@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CA1862
 
 using DevHabit.Api.Database;
+using DevHabit.Api.Dtos.Common;
 using DevHabit.Api.Dtos.Habits;
 using DevHabit.Api.Entities;
 using DevHabit.Api.Services.Sorting;
@@ -16,7 +17,7 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionDto>> GetHabits(
+    public async Task<ActionResult<PaginationResult<HabitDto>>> GetHabits(
         HabitsQueryParameters queryParams,
         SortMappingProvider sortMappingProvider)
     {
@@ -56,15 +57,15 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
         }
 
         query = query.ApplySort(queryParams.Sort, sortMappings);
-        
-        List<HabitDto> habits = await query
-            .Select(HabitQueries.ProjectToDto())
-            .ToListAsync();
 
-        var collectionDto = new HabitsCollectionDto
-        {
-            Data = habits
-        };
+        IQueryable<HabitDto> dtoQuery = query.Select(HabitQueries.ProjectToDto());
+
+        #pragma warning disable IDE0008
+        var collectionDto = await PaginationResult<HabitDto>.CreateAsync(
+            dtoQuery,
+            queryParams.Page,
+            queryParams.PageSize);
+        #pragma warning restore IDE0008
         
         return Ok(collectionDto);
     }
