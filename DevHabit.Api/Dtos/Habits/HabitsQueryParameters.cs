@@ -17,6 +17,8 @@ public sealed record HabitsQueryParameters
     public HabitStatus? Status { get; init; }
     
     public string? Sort { get; init; }
+    
+    public string? Fields { get; init; }
 
     public int Page { get; init; } = 1;
 
