@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DevHabit.Api.Dtos.Common;
 
-public sealed record PaginationResult<T> : ICollectionResponse<T>
+public sealed record PaginationResult<T> : ICollectionResponse<T>, ILinksResponse
 {
     public required List<T> Items { get; init; }
     
@@ -12,6 +12,8 @@ public sealed record PaginationResult<T> : ICollectionResponse<T>
     public required int PageSize { get; init; }
     
     public required int TotalCount { get; init; }
+    
+    public List<LinkDto> Links { get; set; }
 
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 

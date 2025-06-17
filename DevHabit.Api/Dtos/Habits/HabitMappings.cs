@@ -1,4 +1,5 @@
-﻿using DevHabit.Api.Entities;
+﻿using DevHabit.Api.Dtos.Common;
+using DevHabit.Api.Entities;
 using DevHabit.Api.Services.Sorting;
 
 namespace DevHabit.Api.Dtos.Habits;
@@ -64,10 +65,11 @@ internal static class HabitMappings
         habit.UpdatedAtUtc = DateTime.UtcNow;
     }
     
-    public static HabitDto ToDto(this Habit habit)
+    public static HabitDto ToDto(this Habit habit, IEnumerable<LinkDto>? links = null)
     {
         return new HabitDto
         {
+            Links = links,
             Id = habit.Id,
             Name = habit.Name,
             Description = habit.Description,
