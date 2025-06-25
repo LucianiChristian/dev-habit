@@ -1,8 +1,11 @@
-﻿using DevHabit.Api.Dtos.Common;
+using DevHabit.Api.Dtos.Common;
+using Newtonsoft.Json;
 
 namespace DevHabit.Api.Dtos.Tags;
 
-public sealed record TagsCollectionDto : ICollectionResponse<TagDto>
+public sealed record TagsCollectionDto : ICollectionResponse<TagDto>, ILinksResponse
 {
-    public required List<TagDto> Items { get; init; }
+    public List<TagDto> Items { get; init; }
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public List<LinkDto> Links { get; set; }
 }

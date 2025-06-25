@@ -20,6 +20,13 @@ namespace DevHabit.Api.Controllers;
 [Route("habits")]
 [ApiVersion(1.0)]
 [ApiVersion(2.0)]
+[Produces(
+    MediaTypeNames.Application.Json,
+    CustomMediaTypeNames.Application.JsonV1,
+    CustomMediaTypeNames.Application.JsonV2,
+    CustomMediaTypeNames.Application.HateoasJson,
+    CustomMediaTypeNames.Application.HateoasJsonV1,
+    CustomMediaTypeNames.Application.HateoasJsonV2)]
 public sealed class HabitsController(ApplicationDbContext dbContext, LinkService linkService) 
     : ControllerBase
 {
@@ -81,21 +88,19 @@ public sealed class HabitsController(ApplicationDbContext dbContext, LinkService
             .Take(queryParams.PageSize)
             .Select(HabitQueries.ProjectToDto())
             .ToListAsync();
-        
-        bool includeLinks = queryParams.Accept == CustomMediaTypeNames.Application.HateoasJson;
 
         var paginationResult = new PaginationResult<ExpandoObject>
         {
             Items = dataShapingService.ShapeMany(
                 habits,
                 queryParams.Fields,
-                includeLinks ? h => CreateLinksForHabit(h.Id, queryParams.Fields) : null),
+                queryParams.IncludeLinks ? h => CreateLinksForHabit(h.Id, queryParams.Fields) : null),
             Page = queryParams.Page,
             PageSize = queryParams.PageSize,
             TotalCount = totalCount
         };
 
-        if (includeLinks)
+        if (queryParams.IncludeLinks)
         {
             paginationResult = paginationResult with
             {
@@ -109,36 +114,31 @@ public sealed class HabitsController(ApplicationDbContext dbContext, LinkService
     [HttpGet("{id}")]
     [MapToApiVersion(1.0)]
     public async Task<IActionResult> GetHabit(
-        string id,
-        string? fields,
-        [FromHeader(Name = "Accept")]
-        string? accept,
+        HabitQueryParameters queryParams,
         DataShapingService dataShapingService)
     {
-        if (!dataShapingService.Validate<HabitWithTagsDto>(fields))
+        if (!dataShapingService.Validate<HabitWithTagsDto>(queryParams.Fields))
         {
             return Problem(
                 statusCode: StatusCodes.Status400BadRequest,
-                detail: $"The provided data shaping fields aren't valid: '{fields}'");
+                detail: $"The provided data shaping fields aren't valid: '{queryParams.Fields}'");
         }
         
         HabitWithTagsDto? habit = await dbContext
             .Habits
             .Select(HabitQueries.ProjectToDtoWithTags())
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == queryParams.Id);
 
         if (habit is null)
         {
             return NotFound();
         }
 
-        ExpandoObject shapedHabitDto = dataShapingService.Shape(habit, fields);
+        ExpandoObject shapedHabitDto = dataShapingService.Shape(habit, queryParams.Fields);
 
-        bool includeLinks = accept == CustomMediaTypeNames.Application.HateoasJson;
-
-        if (includeLinks)
+        if (queryParams.IncludeLinks)
         {
-            List<LinkDto> links = CreateLinksForHabit(id, fields);
+            List<LinkDto> links = CreateLinksForHabit(queryParams.Id, queryParams.Fields);
 
             shapedHabitDto.TryAdd("links", links);
         }
@@ -149,36 +149,31 @@ public sealed class HabitsController(ApplicationDbContext dbContext, LinkService
     [HttpGet("{id}")]
     [MapToApiVersion(2.0)]
     public async Task<IActionResult> GetHabitV2(
-        string id,
-        string? fields,
-        [FromHeader(Name = "Accept")]
-        string? accept,
+        HabitQueryParameters queryParams,
         DataShapingService dataShapingService)
     {
-        if (!dataShapingService.Validate<HabitWithTagsDtoV2>(fields))
+        if (!dataShapingService.Validate<HabitWithTagsDtoV2>(queryParams.Fields))
         {
             return Problem(
                 statusCode: StatusCodes.Status400BadRequest,
-                detail: $"The provided data shaping fields aren't valid: '{fields}'");
+                detail: $"The provided data shaping fields aren't valid: '{queryParams.Fields}'");
         }
         
         HabitWithTagsDtoV2? habit = await dbContext
             .Habits
             .Select(HabitQueries.ProjectToDtoWithTagsV2())
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == queryParams.Id);
 
         if (habit is null)
         {
             return NotFound();
         }
 
-        ExpandoObject shapedHabitDto = dataShapingService.Shape(habit, fields);
+        ExpandoObject shapedHabitDto = dataShapingService.Shape(habit, queryParams.Fields);
 
-        bool includeLinks = accept == CustomMediaTypeNames.Application.HateoasJson;
-
-        if (includeLinks)
+        if (queryParams.IncludeLinks)
         {
-            List<LinkDto> links = CreateLinksForHabit(id, fields);
+            List<LinkDto> links = CreateLinksForHabit(queryParams.Id, queryParams.Fields);
 
             shapedHabitDto.TryAdd("links", links);
         }

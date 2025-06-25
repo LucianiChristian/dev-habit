@@ -3,11 +3,13 @@ using DevHabit.Api.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.AddApiServices();
-builder.AddErrorHandling();
-builder.AddDatabase();
-builder.AddObservability();
-builder.AddApplicationServices();
+builder
+    .AddApiServices()
+    .AddErrorHandling()
+    .AddDatabase()
+    .AddObservability()
+    .AddAuthServices()
+    .AddApplicationServices();
 
 WebApplication app = builder.Build();
 

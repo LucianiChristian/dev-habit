@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DevHabit.Api.Dtos.Habits;
 
-public sealed record HabitsQueryParameters 
+public sealed record HabitsQueryParameters  : AcceptHeaderDto
 {
     [FromQuery(Name = "q")]
     public string? Search
@@ -24,6 +24,4 @@ public sealed record HabitsQueryParameters
 
     public int PageSize { get; init; } = 10;
     
-    [FromHeader(Name = "Accept")]
-    public string? Accept { get; init; }
 }
