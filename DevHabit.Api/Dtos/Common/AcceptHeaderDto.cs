@@ -1,7 +1,7 @@
 ﻿using DevHabit.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DevHabit.Api.Dtos.Habits;
+namespace DevHabit.Api.Dtos.Common;
 
 public record AcceptHeaderDto
 {

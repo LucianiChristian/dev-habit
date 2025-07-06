@@ -1,4 +1,5 @@
-﻿using DevHabit.Api.Entities;
+﻿using DevHabit.Api.Dtos.Common;
+using DevHabit.Api.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevHabit.Api.Dtos.Habits;
